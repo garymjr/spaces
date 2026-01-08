@@ -41,7 +41,7 @@ spaces <command> [args...]
 | Command | Description |
 |---------|-------------|
 | `list` | List all worktrees |
-| `create <name> [branch | -b <new-branch>]` | Create a new worktree |
+| `create <name> [branch]` | Create a new worktree (use `-b <branch>` for custom branch name) |
 | `enter <name>` | Enter a worktree (cd) |
 | `remove <name>` | Remove a worktree |
 | `info <name>` | Show worktree details |
