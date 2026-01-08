@@ -21,20 +21,20 @@ Prefix worktree names with intent:
 
 ```bash
 # Features
-sc feat-auth-flow           # New feature
-sc feat-user-profile        # Another feature
+spaces create feat-auth-flow           # New feature
+spaces create feat-user-profile        # Another feature
 
 # Fixes
-sc fix-login-crash          # Bug fix
-sc fix-memory-leak          # Another bug fix
+spaces create fix-login-crash          # Bug fix
+spaces create fix-memory-leak          # Another bug fix
 
 # Testing
-sc test-main                # Test main branch
-sc test-pr-123              # Test PR #123
+spaces create test-main                # Test main branch
+spaces create test-pr-123              # Test PR #123
 
 # Experiments
-sc exp-new-parser           # Experimental work
-sc refactor-db              # Refactoring work
+spaces create exp-new-parser           # Experimental work
+spaces create refactor-db              # Refactoring work
 ```
 
 **Rules:**
@@ -49,10 +49,10 @@ sc refactor-db              # Refactoring work
 
 ```bash
 # Start feature
-sc feat-user-auth
-se feat-user-auth
+spaces create feat-user-auth
+spaces enter feat-user-auth
 # ... work ...
-cd ../.. && sr feat-user-auth    # Clean up when done
+cd ../.. && spaces remove feat-user-auth    # Clean up when done
 ```
 
 ### PR Review
@@ -61,35 +61,35 @@ cd ../.. && sr feat-user-auth    # Clean up when done
 # Fetch PR branch first
 gh pr checkout 123
 
-# Create worktree from PR
-sc review-123 -b pr/123
-se review-123
+# Create worktree from PR branch
+spaces create review-123 pr/123
+spaces enter review-123
 # ... review ...
-cd ../.. && sr review-123
+cd ../.. && spaces remove review-123
 ```
 
 ### Parallel Features
 
 ```bash
 # Create multiple worktrees
-sc feat-auth
-sc feat-payments
-sc feat-notifications
+spaces create feat-auth
+spaces create feat-payments
+spaces create feat-notifications
 
 # Switch as needed
-se feat-auth          # Work on auth
+spaces enter feat-auth          # Work on auth
 # ... later ...
-se feat-payments      # Switch to payments
+spaces enter feat-payments      # Switch to payments
 ```
 
 ### Bug Investigation
 
 ```bash
 # Isolate bug investigation
-sc investigate-crash -b main
-se investigate-crash
+spaces create investigate-crash main
+spaces enter investigate-crash
 # ... debug ...
-cd ../.. && sr investigate-crash
+cd ../.. && spaces remove investigate-crash
 ```
 
 ## Hook Best Practices
@@ -166,11 +166,11 @@ Worktrees consume disk space. Clean up regularly:
 
 ```bash
 # List all worktrees
-sl
+spaces list
 
 # Remove old/unused worktrees
-sr old-feature
-sr exp-failed-idea
+spaces remove old-feature
+spaces remove exp-failed-idea
 
 # Check disk usage
 du -sh .spaces/worktrees/*
@@ -182,20 +182,20 @@ Avoid names that conflict with git branches:
 
 ```bash
 # Bad: ambiguous with branch name
-sc main           # Confusing: which "main"?
+spaces create main           # Confusing: which "main"?
 
 # Good: prefix for clarity
-sc test-main      # Clear: this is a worktree, not the main branch
-sc review-main    # Clear: reviewing main branch
+spaces create test-main      # Clear: this is a worktree, not the main branch
+spaces create review-main    # Clear: reviewing main branch
 ```
 
 ### Working in Wrong Directory
 
-Always use `se` (spaces-enter) to enter worktrees, not manual `cd`:
+Always use `spaces enter` to enter worktrees, not manual `cd`:
 
 ```bash
 # Good: uses spaces-enter
-se feat-auth
+spaces enter feat-auth
 
 # Bad: manual cd
 cd .spaces/worktrees/feat-auth    # Error-prone
@@ -206,7 +206,7 @@ cd .spaces/worktrees/feat-auth    # Error-prone
 Check branch before working:
 
 ```bash
-se feat-auth
+spaces enter feat-auth
 git branch --show-current          # Verify you're on the right branch
 ```
 
@@ -221,8 +221,8 @@ Agents should use `spaces enter` for programmatic path output:
 PATH=$(spaces enter feat-auth)
 cd "$PATH"
 
-# Or use the shell integration
-se feat-auth
+# Or use the shell integration (after sourcing spaces-enter.sh)
+spaces-enter feat-auth
 ```
 
 ### Managing Agent Worktrees
@@ -231,9 +231,9 @@ Create dedicated worktrees for agent tasks:
 
 ```bash
 # Agent worktree naming
-sc agent-task-001          # Specific task
-sc agent-experiment-alpha  # Agent experiments
-sc agent-refactor-x        # Refactoring work
+spaces create agent-task-001          # Specific task
+spaces create agent-experiment-alpha  # Agent experiments
+spaces create agent-refactor-x        # Refactoring work
 ```
 
 ### Cleanup Strategy
@@ -242,7 +242,7 @@ Clean up agent worktrees after task completion:
 
 ```bash
 # After agent completes task
-sr agent-task-001
+spaces remove agent-task-001
 ```
 
 ## Best Practices Summary
@@ -259,19 +259,13 @@ sr agent-task-001
 ## Quick Reference
 
 ```bash
-# Shell aliases (source spaces-enter.sh)
-se <name>    # Enter worktree (cd to it)
-sl           # List worktrees
-sc <name>    # Create worktree
-sr <name>    # Remove worktree
-si <name>    # Show worktree info
-shk          # Run hooks
-
-# List hooks
-spaces hook list
-
-# Run hook manually
-spaces hook <name> <event>
+spaces create <name> [branch]    # Create worktree (optional: from branch)
+spaces enter <name>              # Enter worktree (outputs path for scripting)
+spaces list                      # List all worktrees
+spaces remove <name>             # Remove worktree
+spaces info <name>               # Show worktree details
+spaces hook list                 # List available hooks
+spaces hook <name> <event>       # Run hook manually
 ```
 
 ## Getting Help
