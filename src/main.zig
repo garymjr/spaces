@@ -6,13 +6,25 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    if (args.len < 2) {
+    // Check for global help flags
+    if (args.len < 2 or isHelpFlag(args[1])) {
         printUsage();
         return;
     }
 
     const command_name = args[1];
     const command_args = args[2..];
+
+    // Check if first arg after command is help
+    if (command_args.len > 0 and isHelpFlag(command_args[0])) {
+        const command = Command.get(command_name) orelse {
+            std.debug.print("Unknown command: {s}\n\n", .{command_name});
+            printUsage();
+            std.process.exit(1);
+        };
+        printCommandHelp(command);
+        return;
+    }
 
     const command = Command.get(command_name) orelse {
         std.debug.print("Unknown command: {s}\n\n", .{command_name});
@@ -26,12 +38,20 @@ pub fn main() !void {
     }
 }
 
+fn isHelpFlag(arg: []const u8) bool {
+    return std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h");
+}
+
 fn printUsage() void {
     std.debug.print(
         \\spaces - Git worktree manager for AI agents
         \\
         \\USAGE:
         \\  spaces <command> [args...]
+        \\  spaces [flags]
+        \\
+        \\FLAGS:
+        \\  -h, --help    Show this help message
         \\
         \\COMMANDS:
         \\  list                  List all worktrees
@@ -50,6 +70,20 @@ fn printUsage() void {
         \\  spaces create feature-x
         \\  spaces enter feature-x
         \\  spaces list
+        \\  spaces create --help
         \\
     , .{});
+}
+
+fn printCommandHelp(command: *const Command) void {
+    std.debug.print(
+        \\spaces - {s}
+        \\
+        \\USAGE:
+        \\  spaces {s}
+        \\
+        \\DESCRIPTION:
+        \\  {s}
+        \\
+    , .{ command.description, command.usage, command.description });
 }

@@ -143,6 +143,8 @@ pub const WorktreeManager = struct {
             try args.append(self.allocator, "-b");
             try args.append(self.allocator, b);
         } else {
+            // Create new branch with the worktree name
+            try args.append(self.allocator, "-b");
             try args.append(self.allocator, name);
         }
 
@@ -204,7 +206,7 @@ pub const WorktreeManager = struct {
 
     /// Run a git command and return stdout
     fn runGit(self: *Self, args: []const []const u8) ![]const u8 {
-        const full_args = try self.allocator.alloc([]const u8, args.len + 2);
+        const full_args = try self.allocator.alloc([]const u8, args.len + 3);
         defer self.allocator.free(full_args);
 
         full_args[0] = "git";
