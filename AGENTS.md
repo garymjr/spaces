@@ -298,27 +298,32 @@ spaces/
 ### Entry Points
 
 **CLI Entry**: `src/main.zig`
+
 - Parses command-line arguments
 - Routes to commands via `Command.get()`
 - Handles errors and displays usage
 
 **Library Entry**: `src/root.zig`
+
 - Exports public API: `WorktreeManager`, `HookRunner`, `HookEvent`
 - Contains library tests
 
 ### Key Abstractions
 
 **WorktreeManager** (`src/lib/worktree.zig`)
+
 - Manages git worktrees
 - Methods: `list()`, `create()`, `remove()`, `getByName()`, `getWorktreePath()`, `enter()`
 - Integrates with `HookRunner` for lifecycle hooks
 
 **HookRunner** (`src/lib/hooks.zig`)
+
 - Manages hook scripts in `.spaces/hooks/`
 - Executes hooks before/after worktree operations
 - Hook events: `pre_create`, `post_create`, `pre_enter`, `post_enter`, `pre_remove`, `post_remove`
 
 **Command** (`src/commands/command.zig`)
+
 - Registry pattern for CLI commands
 - Command struct: name, description, run function pointer
 
@@ -335,6 +340,7 @@ spaces/
 ### Adding a New Command
 
 1. Create new file in `src/commands/` (e.g., `newcmd.zig`):
+
 ```zig
 const std = @import("std");
 const WorktreeManager = @import("../lib/worktree.zig").WorktreeManager;
@@ -344,7 +350,8 @@ pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !void {
 }
 ```
 
-2. Register in `src/commands/command.zig`:
+1. Register in `src/commands/command.zig`:
+
 ```zig
 .{
     .name = "newcmd",
@@ -353,9 +360,9 @@ pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !void {
 },
 ```
 
-3. Update usage in `src/main.zig`
+1. Update usage in `src/main.zig`
 
-4. Test with `just test` and `just run newcmd`
+2. Test with `just test` and `just run newcmd`
 
 ### Adding Tests
 
@@ -374,6 +381,7 @@ Tests run automatically with `just test`.
 ### Shell Integration
 
 The tool provides shell integration via `spaces-enter.sh`:
+
 - Wraps `spaces enter` for proper `cd` support
 - Source in `~/.zshrc` or `~/.bashrc`
 - Aliases: `se`, `sl`, `sc`, `sr`, `si`, `shk`
@@ -381,6 +389,7 @@ The tool provides shell integration via `spaces-enter.sh`:
 ### Hooks
 
 Hooks are executable scripts in `.spaces/hooks/`:
+
 - Must be executable (`chmod +x`)
 - Receive event context as JSON (TODO: implement serialization)
 - Can be any executable script (bash, python, etc.)
@@ -397,18 +406,6 @@ Hooks are automatically triggered during worktree operations:
 | `remove` | `pre-remove` | `post-remove` |
 
 **Note**: Hook output is captured but not displayed to avoid clutter. Use output redirection in hook scripts if visibility is needed.
-
-## Recent Fixes (2025-01-08)
-
-### Hook System Issues Resolved
-
-1. **Fixed `hookExists()` logic**: Previously returned `true` when hook didn't exist due to incorrect `== null` comparison. Now properly checks if file access succeeds.
-
-2. **Added `enter()` method to `WorktreeManager`**: The `enter` command was missing lifecycle hooks. Added new `enter()` method that triggers `pre-enter` and `post-enter` hooks.
-
-3. **Updated `enter.zig` command**: Now uses `manager.enter()` instead of `getWorktreePath()` to ensure hooks are triggered.
-
-4. **All lifecycle hooks now working**: `pre_create`, `post_create`, `pre_enter`, `post_enter`, `pre_remove`, `post_remove` all execute correctly.
 
 See `test-hooks.sh` for integration test that verifies all hooks execute.
 

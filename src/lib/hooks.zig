@@ -71,20 +71,27 @@ pub const HookRunner = struct {
         // Check if hook exists
         if (std.fs.accessAbsolute(hook_path, .{})) |_| {
             // Hook exists, run it
-            try self.executeHook(hook_path, event_data);
+            try self.executeHook(hook_path, event_name, event_data);
         } else |_| {
             // Hook doesn't exist, that's fine
             return;
         }
     }
 
-    fn executeHook(self: *Self, hook_path: []const u8, event_data: anytype) !void {
-        _ = event_data; // TODO: Serialize event data and pass to hook
+    fn executeHook(self: *Self, hook_path: []const u8, event_name: []const u8, event_data: anytype) !void {
+        // Determine the working directory for the hook
+        const cwd = if (std.mem.startsWith(u8, event_name, "post-")) blk: {
+            // For post-* hooks, run in the worktree directory if available
+            if (@hasField(@TypeOf(event_data), "worktree")) {
+                break :blk event_data.worktree.path;
+            }
+            break :blk self.hooks_dir;
+        } else self.hooks_dir;
 
         const result = try std.process.Child.run(.{
             .allocator = self.allocator,
             .argv = &[_][]const u8{ hook_path },
-            .cwd = self.hooks_dir,
+            .cwd = cwd,
         });
 
         defer {
