@@ -30,7 +30,7 @@ const commands = [_]Command{
     .{
         .name = "create",
         .description = "Create a new worktree",
-        .usage = "create <name> [-b <branch>]",
+        .usage = "create <name> [existing-branch | -b <new-branch>]",
         .run = @import("create.zig").run,
     },
     .{

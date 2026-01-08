@@ -41,7 +41,7 @@ spaces <command> [args...]
 | Command | Description |
 |---------|-------------|
 | `list` | List all worktrees |
-| `create <name> [-b <branch>]` | Create a new worktree |
+| `create <name> [branch | -b <new-branch>]` | Create a new worktree |
 | `enter <name>` | Enter a worktree (cd) |
 | `remove <name>` | Remove a worktree |
 | `info <name>` | Show worktree details |
@@ -120,11 +120,14 @@ Hooks receive context about the event. Hook data will be serialized as JSON and 
 # List worktrees
 spaces list
 
-# Create a worktree (creates new branch)
+# Create a worktree with new branch (branch name = worktree name)
 spaces create feature-auth
 
 # Create worktree from existing branch
-spaces create feature-auth -b develop
+spaces create test-main main
+
+# Create worktree with custom new branch name
+spaces create wt-1 -b feature-x
 
 # Enter a worktree
 spaces-enter feature-auth

@@ -125,7 +125,14 @@ pub const WorktreeManager = struct {
     }
 
     /// Create a new worktree
-    pub fn create(self: *Self, name: []const u8, branch: ?[]const u8) !Worktree {
+    /// If create_new_branch is true, creates a new branch (branch name defaults to worktree name)
+    /// If create_new_branch is false, checks out the existing branch specified in `branch`
+    ///
+    /// Examples:
+    ///   create("feat-x", null, true)  -> git worktree add .spaces/worktrees/feat-x -b feat-x
+    ///   create("wt-1", "main", false) -> git worktree add .spaces/worktrees/wt-1 main
+    ///   create("wt-1", "feat-y", true) -> git worktree add .spaces/worktrees/wt-1 -b feat-y
+    pub fn create(self: *Self, name: []const u8, branch: ?[]const u8, create_new_branch: bool) !Worktree {
         // Run pre-create hook
         try self.hooks.run("pre-create", .{ .name = name, .branch = branch });
 
@@ -139,13 +146,18 @@ pub const WorktreeManager = struct {
         try args.append(self.allocator, "add");
         try args.append(self.allocator, worktree_path);
 
-        if (branch) |b| {
+        if (create_new_branch) {
+            // Create new branch: git worktree add <path> -b <branch>
+            const branch_name = branch orelse name;
             try args.append(self.allocator, "-b");
-            try args.append(self.allocator, b);
+            try args.append(self.allocator, branch_name);
         } else {
-            // Create new branch with the worktree name
-            try args.append(self.allocator, "-b");
-            try args.append(self.allocator, name);
+            // Checkout existing branch: git worktree add <path> <branch>
+            if (branch) |b| {
+                try args.append(self.allocator, b);
+            } else {
+                return error.BranchRequired;
+            }
         }
 
         const result = try self.runGit(args.items);

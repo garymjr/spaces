@@ -54,9 +54,9 @@ fn printUsage() void {
         \\  -h, --help    Show this help message
         \\
         \\COMMANDS:
-        \\  list                  List all worktrees
-        \\  create <name>         Create a new worktree
-        \\  enter <name>          Enter a worktree (cd)
+        \\  list                        List all worktrees
+        \\  create <name> [branch|-b]   Create a new worktree
+        \\  enter <name>                Enter a worktree (cd)
         \\  remove <name>         Remove a worktree
         \\  info <name>           Show worktree details
         \\  hook <name> <event>   Run a hook manually
@@ -67,8 +67,10 @@ fn printUsage() void {
         \\  pre-remove, post-remove
         \\
         \\EXAMPLES:
-        \\  spaces create feature-x
-        \\  spaces enter feature-x
+        \\  spaces create feat-auth           # Create new branch 'feat-auth'
+        \\  spaces create test-main main      # Create worktree from existing 'main' branch
+        \\  spaces create wt-1 -b feat-x      # Create worktree with new branch 'feat-x'
+        \\  spaces enter feat-auth
         \\  spaces list
         \\  spaces create --help
         \\
