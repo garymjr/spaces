@@ -216,6 +216,19 @@ pub const WorktreeManager = struct {
         return try self.allocator.dupe(u8, worktree.path);
     }
 
+    /// Enter a worktree (run hooks and return path)
+    pub fn enter(self: *Self, name: []const u8) ![]const u8 {
+        const worktree = try self.getByName(name);
+
+        // Run pre-enter hook
+        try self.hooks.run("pre-enter", .{ .name = name, .worktree = worktree });
+
+        // Run post-enter hook
+        try self.hooks.run("post-enter", .{ .name = name, .worktree = worktree });
+
+        return try self.allocator.dupe(u8, worktree.path);
+    }
+
     /// Run a git command and return stdout
     fn runGit(self: *Self, args: []const []const u8) ![]const u8 {
         const full_args = try self.allocator.alloc([]const u8, args.len + 3);

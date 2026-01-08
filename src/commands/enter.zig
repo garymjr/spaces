@@ -15,7 +15,8 @@ pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !void {
     var manager = try WorktreeManager.init(allocator, repo_path);
     defer manager.deinit();
 
-    const worktree_path = try manager.getWorktreePath(name);
+    // Enter runs pre-enter and post-enter hooks
+    const worktree_path = try manager.enter(name);
     defer allocator.free(worktree_path);
 
     // Print the path for the shell to use

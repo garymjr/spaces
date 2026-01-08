@@ -310,7 +310,7 @@ spaces/
 
 **WorktreeManager** (`src/lib/worktree.zig`)
 - Manages git worktrees
-- Methods: `list()`, `create()`, `remove()`, `getByName()`, `getWorktreePath()`
+- Methods: `list()`, `create()`, `remove()`, `getByName()`, `getWorktreePath()`, `enter()`
 - Integrates with `HookRunner` for lifecycle hooks
 
 **HookRunner** (`src/lib/hooks.zig`)
@@ -385,6 +385,32 @@ Hooks are executable scripts in `.spaces/hooks/`:
 - Receive event context as JSON (TODO: implement serialization)
 - Can be any executable script (bash, python, etc.)
 - Fail silently if hook doesn't exist
+
+## Hook Lifecycle
+
+Hooks are automatically triggered during worktree operations:
+
+| Command | Pre-hook | Post-hook |
+|---------|----------|-----------|
+| `create` | `pre-create` | `post-create` |
+| `enter` | `pre-enter` | `post-enter` |
+| `remove` | `pre-remove` | `post-remove` |
+
+**Note**: Hook output is captured but not displayed to avoid clutter. Use output redirection in hook scripts if visibility is needed.
+
+## Recent Fixes (2025-01-08)
+
+### Hook System Issues Resolved
+
+1. **Fixed `hookExists()` logic**: Previously returned `true` when hook didn't exist due to incorrect `== null` comparison. Now properly checks if file access succeeds.
+
+2. **Added `enter()` method to `WorktreeManager`**: The `enter` command was missing lifecycle hooks. Added new `enter()` method that triggers `pre-enter` and `post-enter` hooks.
+
+3. **Updated `enter.zig` command**: Now uses `manager.enter()` instead of `getWorktreePath()` to ensure hooks are triggered.
+
+4. **All lifecycle hooks now working**: `pre_create`, `post_create`, `pre_enter`, `post_enter`, `pre_remove`, `post_remove` all execute correctly.
+
+See `test-hooks.sh` for integration test that verifies all hooks execute.
 
 ## Dependencies
 

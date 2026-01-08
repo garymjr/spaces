@@ -103,7 +103,8 @@ pub const HookRunner = struct {
         const hook_path = std.fmt.allocPrint(self.allocator, "{s}/{s}", .{ self.hooks_dir, event_name }) catch return false;
         defer self.allocator.free(hook_path);
 
-        return std.fs.accessAbsolute(hook_path, .{}) == null;
+        // Returns true if hook exists (access succeeds), false otherwise
+        return std.fs.accessAbsolute(hook_path, .{}) catch return false;
     }
 
     /// List all available hooks
